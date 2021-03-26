@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script>
+      (async () => {
+        navigator.serviceWorker.register("/sw.js");
+
+        function assignFunctionToElementById(id = "", fn = () => {}) {
+          const el = document.getElementById(id);
+          if (el === null) {
+            return console.log("invalid id");
+          }
+          el.addEventListener("click", fn);
+        }
+
+        async function requestPermission() {
+          await Notification.requestPermission();
+        }
+        async function sendNotification() {
+          const registration = await navigator.serviceWorker.getRegistration();
+          registration.showNotification("Title", { body: "This is body" });
+        }
+        async function subscribe() {
+          const registration = await navigator.serviceWorker.getRegistration();
+          const subscription = await registration.pushManager.subscribe({
+            // ### !!       IMPORTANT       !! ###
+            // ### !! REPLACE WITH YOUR KEY !! ###
+            applicationServerKey: "ENTER_SERVER_GENERATED_PUBLIC_KEY_HERE",
+            userVisibleOnly: true,
+          });
+          console.log(JSON.stringify({ subscription }));
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+          assignFunctionToElementById("request-subscription", subscribe);
+          assignFunctionToElementById("request-permission", requestPermission);
+          assignFunctionToElementById("send-notification", sendNotification);
+        });
+      })();
+    </script>
+  </head>
+  <body>
+    <button id="request-subscription">Subscribe</button>
+    <button id="request-permission">Request Permission</button>
+    <button id="send-notification">Send Push Notification</button>
+  </body>
+</html>

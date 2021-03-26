@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+
+    <script>
+      (() => {
+        const height = 480;
+        const width = 640;
+        const speed = 0.34;
+        const numberOfDrops = 70;
+        let lastTime = 0;
+
+        class Rain {
+          width = 2;
+          height = 10;
+          constructor(x, y, size) {
+            this.x = x;
+            this.y = y;
+            this.size = size;
+          }
+
+          updatePosition(delta) {
+            this.x = this.x > width ? 0 : this.x + speed * delta;
+            this.y = this.y > height ? 0 : this.y + speed * delta * 2;
+            this.y += speed * 2 * delta;
+          }
+
+          render(context, delta = 0) {
+            this.updatePosition(delta);
+            context.fillRect(
+              this.x - this.width / 2,
+              this.y - this.height / 2,
+              this.width * this.size,
+              this.height * this.size
+            );
+          }
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+          const canvas = document.getElementById("canvas");
+          const context = canvas.getContext("2d");
+          const particles = new Array(numberOfDrops)
+            .fill(8)
+            .map(
+              () =>
+                new Rain(
+                  Math.random() * width,
+                  Math.random() * height,
+                  Math.random() * 2
+                )
+            );
+
+          function renderBg() {
+            context.fillStyle = "#88F";
+            context.fillRect(0, 0, width, height);
+          }
+
+          function renderDrops(delta) {
+            context.fillStyle = "#22A";
+            particles.forEach((rain) => rain.render(context, delta));
+          }
+
+          function updateDeltaTime(currentTime) {
+            const time = currentTime - lastTime;
+            lastTime = currentTime;
+            return time;
+          }
+
+          function render(currentTime = 0) {
+            const delta = updateDeltaTime(currentTime);
+            renderBg();
+            renderDrops(delta);
+            window.requestAnimationFrame(render);
+          }
+          window.requestAnimationFrame(render);
+        });
+      })();
+    </script>
+  </head>
+  <body>
+    <canvas width="640" height="480" id="canvas"></canvas>
+  </body>
+</html>

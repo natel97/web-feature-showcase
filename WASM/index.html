@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <script src="wasm_exec.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.0.2/pako.min.js"></script>
+        <script>
+            window.updateDOM = (str) => {
+                document.getElementById('input').innerHTML = str;
+            }
+            (async () => {
+            if (WebAssembly) {
+                 // WebAssembly.instantiateStreaming is not currently available in Safari
+                 if (WebAssembly && !WebAssembly.instantiateStreaming) { // polyfill
+                     WebAssembly.instantiateStreaming = async (resp, importObject) => {
+                        const source = await (await resp).arrayBuffer();
+                         return await WebAssembly.instantiate(source, importObject);
+                     };
+                 }  
+
+                 const go = new Go();
+                 const response = await fetch("main.wasm.gz");
+                 const buffer = pako.ungzip(await response.arrayBuffer());
+                 const obj = await WebAssembly.instantiate(buffer, go.importObject);
+                 go.run(obj.instance)
+                //  WebAssembly.instantiateStreaming(fetch("main.wasm"), go.importObject).then((result) => {
+                // WebAssembly.instantiate(fetch("main.wasm"), go.importObject).then((result) => {
+                    // go.run(result.instance);
+                //  });
+            } else {
+               console.log("WebAssembly is not supported in your browser")
+            }
+        })()
+        </script>
+    </head>
+    <body>
+        <div id="input"></div>
+        <main id="wasm"></main>
+    </body>
+</html>
